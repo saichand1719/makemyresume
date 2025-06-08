@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+python-docx
+pdfplumber
+openai
+spacy
+sentence-transformers
+boto3

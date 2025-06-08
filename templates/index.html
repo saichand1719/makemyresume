@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>MakeMyResume – Minimal</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-xl">
+    <h1 class="text-2xl font-semibold mb-4">MakeMyResume (demo)</h1>
+
+    <form id="genForm" class="space-y-4">
+      <div>
+        <label class="font-medium">Upload DOCX résumé</label><br/>
+        <input type="file" name="file" accept=".docx" required class="mt-1"/>
+      </div>
+      <div>
+        <label class="font-medium">Paste Job Description</label><br/>
+        <textarea name="job_description" rows="6" required class="mt-1 w-full border rounded p-2"></textarea>
+      </div>
+      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Generate</button>
+    </form>
+
+    <div id="progressBox" class="mt-6 hidden">
+      <p class="mb-1">Progress: <span id="progPct">0</span>%</p>
+      <div class="w-full bg-gray-200 rounded">
+        <div id="progBar" class="bg-blue-600 text-xs h-2 rounded" style="width:0%"></div>
+      </div>
+      <p id="atsLine" class="mt-2"></p>
+      <a id="dlLink" class="text-blue-700 underline"></a>
+    </div>
+  </div>
+
+<script>
+  const form = document.getElementById("genForm");
+  const box  = document.getElementById("progressBox");
+  const pct  = document.getElementById("progPct");
+  const bar  = document.getElementById("progBar");
+  const atsLine = document.getElementById("atsLine");
+  const dlLink = document.getElementById("dlLink");
+  let taskId = null, timer = null;
+
+  form.addEventListener("submit", async (e)=> {
+    e.preventDefault();
+    const data = new FormData(form);
+    const res = await fetch("/generate", { method:"POST", body:data}).then(r=>r.json());
+    taskId = res.task_id;
+    box.classList.remove("hidden");
+    poll();
+  });
+
+  async function poll(){
+    timer = setInterval(async () => {
+      const res = await fetch("/status/"+taskId).then(r=>r.json());
+      pct.textContent = res.progress;
+      bar.style.width = res.progress+"%";
+      if(res.progress >= 100){
+        clearInterval(timer);
+        atsLine.textContent = "ATS score: "+res.ats;
+        dlLink.textContent = "Download Résumé";
+        dlLink.href = "/download/"+taskId;
+      }
+    }, 1000);
+  }
+</script>
+</body>
+</html>

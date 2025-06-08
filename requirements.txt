@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+python-docx
+python-multipart
+jinja2
+aiofiles
+openai
